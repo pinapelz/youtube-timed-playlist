@@ -108,15 +108,15 @@ function Player() {
 
   useEffect(() => {
     if (currentVideoIndex >= 0 && currentVideoIndex < playlist.length) {
-      const [_, __, endTime] = playlist[currentVideoIndex].split(',');
+      const [_, startTime, endTime] = playlist[currentVideoIndex].split(',');
       const videoEndTime = formatTimeToSeconds(endTime);
-
-      // Set a timeout to play the next video when the current video ends.
+      const videoStartTime = formatTimeToSeconds(startTime);
+      console.log('Video wait time: ' + (videoEndTime - videoStartTime) * 1000);
       const timeoutId = setTimeout(() => {
         setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % playlist.length);
         console.log('Video ended. Playing next video.');
         console.log('Current video index: ' + currentVideoIndex);
-      }, (videoEndTime - currentTime) * 1000); // Convert to milliseconds
+      }, ((videoEndTime - videoStartTime) * 1000) + 1000); // Convert to milliseconds
 
       return () => {
         // Clear the timeout if the component unmounts or the video changes.
