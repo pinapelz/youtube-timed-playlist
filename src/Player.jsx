@@ -199,12 +199,6 @@ function Player() {
           Load
         </button>
       </div>
-
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md mb-4 my-5">
-        <h2 className="text-xl font-bold mb-4">Current Playtime</h2>
-        <p>{`Current Time: ${currentTime.toFixed(2)} seconds`}</p>
-      </div>
-
       <PlaylistDisplay playlist={playlist} />
     </div>
   );
