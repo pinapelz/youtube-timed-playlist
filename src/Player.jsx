@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import YouTube from 'react-youtube';
 
 const formatTimeToSeconds = (timeString) => {
   const [hours, minutes, seconds] = timeString.split(':').map(Number);
@@ -35,6 +36,8 @@ function PlaylistDisplay({ playlist }) {
 
 function VanillaYTPlayer({ playlist, currentVideoIndex }) {
   const playerRef = useRef(null);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [isCountdownFinished, setIsCountdownFinished] = useState(false);
 
   useEffect(() => {
     if (currentVideoIndex >= 0 && currentVideoIndex < playlist.length) {
@@ -44,28 +47,58 @@ function VanillaYTPlayer({ playlist, currentVideoIndex }) {
       const videoEndTime = formatTimeToSeconds(endTime);
 
       if (playerRef.current) {
+        setIsVideoLoaded(false);
+        setIsCountdownFinished(false); // Reset countdown state when changing videos
         playerRef.current.loadVideoById({
           videoId,
           startSeconds: videoStartTime,
           endSeconds: videoEndTime,
         });
         console.log('Video loaded. Seeking to start time. ' + videoStartTime + ' seconds');
-        setTimeout(() => {
-          playerRef.current.seekTo(videoStartTime);
-        }, 300);
       }
     }
   }, [currentVideoIndex, playlist]);
 
   useEffect(() => {
-    if (playerRef.current) {
+    if (playerRef.current && isVideoLoaded) {
       playerRef.current.playVideo();
     }
-  }, [currentVideoIndex, playlist]);
+  }, [currentVideoIndex, playlist, isVideoLoaded]);
+
+  useEffect(() => {
+    let countdownInterval;
+
+    if (isCountdownFinished) {
+      // Start a 1-second interval to check if the video has reached the end time
+      countdownInterval = setInterval(() => {
+        if (playerRef.current) {
+          const videoCurrentTime = playerRef.current.getCurrentTime();
+          const [_, __, endTime] = playlist[currentVideoIndex].split(',');
+          const videoEndTime = formatTimeToSeconds(endTime);
+
+          if (videoCurrentTime >= videoEndTime) {
+            // Video has reached end time
+            setIsCountdownFinished(false); // Reset countdown state
+            clearInterval(countdownInterval); // Clear the interval
+          }
+        }
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(countdownInterval); // Cleanup the interval when component unmounts or changes videos
+    };
+  }, [currentVideoIndex, playlist, isCountdownFinished]);
+
+  const onPlayerStateChange = (event) => {
+    if (event.data === 1) {
+      // Video is playing
+      setIsVideoLoaded(true);
+    }
+  };
 
   return (
     <div>
-      {/* The <iframe> (and video player) will replace this <div> tag. */}
       <div id="player">
         <YouTube
           videoId=""
@@ -79,13 +112,14 @@ function VanillaYTPlayer({ playlist, currentVideoIndex }) {
           onReady={(event) => {
             playerRef.current = event.target;
             console.log('Player is ready.');
-            // sleep for 3 
           }}
+          onStateChange={onPlayerStateChange}
         />
       </div>
     </div>
   );
 }
+
 
 function Player() {
   const [playlistBase64, setPlaylistBase64] = useState('');
