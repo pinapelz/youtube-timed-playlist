@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import YouTube from 'react-youtube';
 
 const formatTimeToSeconds = (timeString) => {
   const [hours, minutes, seconds] = timeString.split(':').map(Number);
