@@ -48,7 +48,7 @@ function VanillaYTPlayer({ playlist, currentVideoIndex }) {
 
       if (playerRef.current) {
         setIsVideoLoaded(false);
-        setIsCountdownFinished(false); // Reset countdown state when changing videos
+        setIsCountdownFinished(false);
         playerRef.current.loadVideoById({
           videoId,
           startSeconds: videoStartTime,
@@ -69,7 +69,6 @@ function VanillaYTPlayer({ playlist, currentVideoIndex }) {
     let countdownInterval;
 
     if (isCountdownFinished) {
-      // Start a 1-second interval to check if the video has reached the end time
       countdownInterval = setInterval(() => {
         if (playerRef.current) {
           const videoCurrentTime = playerRef.current.getCurrentTime();
@@ -77,22 +76,20 @@ function VanillaYTPlayer({ playlist, currentVideoIndex }) {
           const videoEndTime = formatTimeToSeconds(endTime);
 
           if (videoCurrentTime >= videoEndTime) {
-            // Video has reached end time
-            setIsCountdownFinished(false); // Reset countdown state
-            clearInterval(countdownInterval); // Clear the interval
+            setIsCountdownFinished(false);
+            clearInterval(countdownInterval);
           }
         }
       }, 1000);
     }
 
     return () => {
-      clearInterval(countdownInterval); // Cleanup the interval when component unmounts or changes videos
+      clearInterval(countdownInterval);
     };
   }, [currentVideoIndex, playlist, isCountdownFinished]);
 
   const onPlayerStateChange = (event) => {
     if (event.data === 1) {
-      // Video is playing
       setIsVideoLoaded(true);
     }
   };
@@ -107,6 +104,7 @@ function VanillaYTPlayer({ playlist, currentVideoIndex }) {
             width: '640',
             playerVars: {
               playsinline: 1,
+              controls: 0,
             },
           }}
           onReady={(event) => {
